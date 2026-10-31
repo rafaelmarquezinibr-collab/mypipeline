@@ -42,6 +42,7 @@ export async function login(_: unknown, fd: FormData) {
   const given = Buffer.from(typed)
   const expected = Buffer.from(clean(process.env.APP_PASSWORD ?? ''))
   if (!expected.length) return { error: 'APP_PASSWORD não está configurada no servidor' }
+  if (!process.env.SESSION_SECRET?.trim()) return { error: 'SESSION_SECRET não está configurada no servidor' }
   if (given.length !== expected.length || !timingSafeEqual(given, expected)) {
     return { error: `Senha incorreta (você digitou ${[...typed].length} caracteres)` }
   }
