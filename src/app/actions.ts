@@ -36,10 +36,14 @@ function nextAction(fd: FormData) {
 // ---------- Login ----------
 
 export async function login(_: unknown, fd: FormData) {
-  const given = Buffer.from(String(fd.get('password') ?? ''))
-  const expected = Buffer.from(process.env.APP_PASSWORD ?? '')
-  if (!expected.length || given.length !== expected.length || !timingSafeEqual(given, expected)) {
-    return { error: 'Senha incorreta' }
+  // trim/NFC: valores colados no painel da Vercel ou digitados no celular podem trazer espaço ou acento em outra forma
+  const clean = (s: string) => s.normalize('NFC').trim()
+  const typed = clean(String(fd.get('password') ?? ''))
+  const given = Buffer.from(typed)
+  const expected = Buffer.from(clean(process.env.APP_PASSWORD ?? ''))
+  if (!expected.length) return { error: 'APP_PASSWORD não está configurada no servidor' }
+  if (given.length !== expected.length || !timingSafeEqual(given, expected)) {
+    return { error: `Senha incorreta (você digitou ${[...typed].length} caracteres)` }
   }
   ;(await cookies()).set(SESSION_COOKIE, await signSession(), {
     httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax',
