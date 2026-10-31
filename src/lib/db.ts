@@ -3,12 +3,16 @@ import postgres from 'postgres'
 
 const globalForDb = globalThis as unknown as { sql?: postgres.Sql }
 
-// prepare: false é necessário no pooler do Supabase (modo transação)
+// prepare: false é necessário no pooler do Supabase (modo transação).
+// Timeouts curtos: em função serverless, conexão presa vira página carregando sem fim.
 export const sql =
   globalForDb.sql ??
   postgres(process.env.DATABASE_URL!, {
     prepare: false,
-    max: 5,
+    max: 3,
+    idle_timeout: 20,
+    connect_timeout: 10,
+    max_lifetime: 60 * 5,
     types: { numeric: { to: 1700, from: [1700], serialize: String, parse: Number } },
   })
 
