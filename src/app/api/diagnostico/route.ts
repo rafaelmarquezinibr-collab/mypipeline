@@ -7,9 +7,12 @@ import { sql } from '@/lib/db'
 export async function GET() {
   const has = (k: string) => Boolean(process.env[k]?.trim())
   let db: string
+  const t0 = Date.now()
   try {
-    const [{ n }] = await sql<{ n: number }[]>`select count(*)::int as n from stages`
-    db = `ok (${n} etapas)`
+    const [{ n, deals, leads }] = await sql<{ n: number; deals: number; leads: number }[]>`
+      select (select count(*)::int from stages) as n, (select count(*)::int from deals) as deals,
+             (select count(*)::int from leads) as leads`
+    db = `ok em ${Date.now() - t0} ms (${n} etapas, ${deals} negócios, ${leads} leads)`
   } catch (e) {
     db = `erro: ${(e as { code?: string }).code ?? 'sem conexão'}`
   }
