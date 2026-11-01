@@ -25,6 +25,12 @@ const presets = [
   { label: 'Em 1 semana', value: () => at(7, 9) },
 ]
 
+const CHANNELS = [
+  { key: 'whatsapp', label: '💬 WhatsApp' },
+  { key: 'email', label: '📧 E-mail' },
+  { key: 'push', label: '📱 Celular' },
+]
+
 const suggestions = ['Ligar', 'Enviar e-mail de follow-up', 'Mandar proposta', 'Agendar reunião', 'Cobrar retorno']
 
 /**
@@ -34,6 +40,8 @@ const suggestions = ['Ligar', 'Enviar e-mail de follow-up', 'Mandar proposta', '
 export function NextActionFields({ required = true, prefix = 'next', defaultTitle = '' }: { required?: boolean; prefix?: string; defaultTitle?: string }) {
   const [due, setDue] = useState(at(1, 9))
   const [title, setTitle] = useState(defaultTitle)
+  const [chans, setChans] = useState<string[]>([])
+  const toggle = (k: string) => setChans((c) => (c.includes(k) ? c.filter((x) => x !== k) : [...c, k]))
   return (
     <div className="space-y-3 rounded-lg border border-indigo-100 bg-indigo-50/50 p-3">
       <div>
@@ -54,6 +62,19 @@ export function NextActionFields({ required = true, prefix = 'next', defaultTitl
             <button key={p.label} type="button" onClick={() => setDue(p.value())} className="chip cursor-pointer bg-white text-indigo-700 ring-1 ring-indigo-200 hover:bg-indigo-50">{p.label}</button>
           ))}
         </div>
+      </div>
+      <div>
+        <label className="label">Lembrar por</label>
+        <div className="flex flex-wrap gap-1">
+          {CHANNELS.map((c) => (
+            <button key={c.key} type="button" onClick={() => toggle(c.key)} aria-pressed={chans.includes(c.key)}
+              className={`chip cursor-pointer ring-1 ${chans.includes(c.key) ? 'bg-indigo-600 text-white ring-indigo-600' : 'bg-white text-slate-600 ring-slate-200 hover:bg-slate-50'}`}>
+              {c.label}
+            </button>
+          ))}
+        </div>
+        {chans.map((c) => <input key={c} type="hidden" name={`${prefix}_channels`} value={c} />)}
+        <p className="mt-1 text-xs text-slate-500">{chans.length ? 'Só pelos canais marcados.' : 'Nenhum marcado: usa os canais padrão dos Ajustes.'}</p>
       </div>
     </div>
   )

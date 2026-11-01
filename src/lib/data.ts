@@ -6,7 +6,7 @@ export type Stage = { id: number; name: string; position: number; max_days: numb
 
 export type Lead = {
   id: number; name: string; company: string | null; email: string | null; phone: string | null
-  source: string | null; status: string; notes: string | null; created_at: Date
+  source: string | null; status: string; notes: string | null; created_at: Date; hubspot_id: string | null
   next_task_at: Date | null; next_task_title: string | null
 }
 
@@ -22,6 +22,8 @@ export type Deal = {
 export type Task = {
   id: number; title: string; due_at: Date; done_at: Date | null
   deal_id: number | null; lead_id: number | null
+  /** canais de lembrete escolhidos ('email,whatsapp'); null = padrão dos Ajustes */
+  channels: string | null
   deal_title: string | null; lead_name: string | null; company: string | null
   /** true quando é a única ação aberta de um negócio aberto: concluir exige a próxima */
   must_next: boolean

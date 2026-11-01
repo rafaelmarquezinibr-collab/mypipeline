@@ -1,9 +1,16 @@
 import 'server-only'
 import { sql } from './db'
-import { notify, type Message } from './notify'
+import { notify, type Channel, type Message } from './notify'
 import { fmtDateTime } from './dates'
 
-type Row = { id: number; title: string; due_at: Date; deal_id: number | null; lead_id: number | null; ref: string | null }
+type Row = { id: number; title: string; due_at: Date; deal_id: number | null; lead_id: number | null; ref: string | null; channels: string | null }
+
+/** Agrupa as ações pelos canais escolhidos em cada uma ('' = padrão dos Ajustes). */
+function byChannels(rows: Row[]) {
+  const groups = new Map<string, Row[]>()
+  for (const r of rows) groups.set(r.channels ?? '', [...(groups.get(r.channels ?? '') ?? []), r])
+  return [...groups].map(([key, list]) => ({ only: key ? (key.split(',') as Channel[]) : undefined, list }))
+}
 
 const label = (t: Row) => `${t.title}${t.ref ? ` · ${t.ref}` : ''}`
 const link = (t: Row) => (t.deal_id ? `/negocios/${t.deal_id}` : t.lead_id ? `/leads/${t.lead_id}` : '/')
@@ -28,7 +35,7 @@ export async function runReminders() {
   const { hour, day } = nowBR()
   const sent: Record<string, unknown> = {}
 
-  const taskRef = sql`select t.id, t.title, t.due_at, t.deal_id, t.lead_id,
+  const taskRef = sql`select t.id, t.title, t.due_at, t.deal_id, t.lead_id, t.channels,
       coalesce(d.title, l.name) as ref
     from tasks t left join deals d on d.id = t.deal_id left join leads l on l.id = t.lead_id`
 
@@ -38,11 +45,15 @@ export async function runReminders() {
       and t.due_at <= now() + make_interval(mins => ${before}) and t.due_at >= now() - interval '1 hour'
     order by t.due_at`
   if (upcoming.length) {
-    const msg: Message =
-      upcoming.length === 1
-        ? { title: `⏰ ${fmtDateTime(upcoming[0].due_at)} ${upcoming[0].title}`, body: label(upcoming[0]), url: link(upcoming[0]) }
-        : { title: `⏰ ${upcoming.length} ações chegando`, body: upcoming.map((t) => `• ${fmtDateTime(t.due_at)} ${label(t)}`).join('\n'), url: '/' }
-    sent.upcoming = await notify(msg)
+    const results = []
+    for (const { only, list } of byChannels(upcoming)) {
+      const msg: Message =
+        list.length === 1
+          ? { title: `⏰ ${fmtDateTime(list[0].due_at)} ${list[0].title}`, body: label(list[0]), url: link(list[0]) }
+          : { title: `⏰ ${list.length} ações chegando`, body: list.map((t) => `• ${fmtDateTime(t.due_at)} ${label(t)}`).join('\n'), url: '/' }
+      results.push(await notify(msg, only))
+    }
+    sent.upcoming = results
     await sql`update tasks set notified_at = now() where id in ${sql(upcoming.map((t) => t.id))}`
   }
 
@@ -53,11 +64,15 @@ export async function runReminders() {
         and (t.overdue_notified_at is null or t.overdue_notified_at < now() - interval '3 hours')
       order by t.due_at`
     if (overdue.length) {
-      sent.overdue = await notify({
-        title: `🔴 ${overdue.length} ${overdue.length === 1 ? 'ação atrasada' : 'ações atrasadas'}`,
-        body: overdue.map((t) => `• ${fmtDateTime(t.due_at)} ${label(t)}`).join('\n'),
-        url: overdue.length === 1 ? link(overdue[0]) : '/',
-      })
+      const results = []
+      for (const { only, list } of byChannels(overdue)) {
+        results.push(await notify({
+          title: `🔴 ${list.length} ${list.length === 1 ? 'ação atrasada' : 'ações atrasadas'}`,
+          body: list.map((t) => `• ${fmtDateTime(t.due_at)} ${label(t)}`).join('\n'),
+          url: list.length === 1 ? link(list[0]) : '/',
+        }, only))
+      }
+      sent.overdue = results
       await sql`update tasks set overdue_notified_at = now() where id in ${sql(overdue.map((t) => t.id))}`
     }
   }
