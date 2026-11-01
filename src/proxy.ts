@@ -8,6 +8,6 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Rotas públicas: login, cron (usa CRON_SECRET), feed de agenda (usa token), PWA
-  matcher: ['/((?!login|api/cron|api/calendario|_next|sw.js|manifest.webmanifest|icon|favicon.ico).*)'],
+  // Rotas públicas: login, cron (usa CRON_SECRET), feed de agenda (usa token), diagnóstico (só booleanos), PWA
+  matcher: ['/((?!login|api/cron|api/calendario|api/diagnostico|_next|sw.js|manifest.webmanifest|icon|favicon.ico).*)'],
 }
