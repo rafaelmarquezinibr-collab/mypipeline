@@ -38,6 +38,7 @@ export function TaskItem({ task, showRef = true }: { task: Task; showRef?: boole
         <div className={`text-sm font-medium ${done ? 'line-through' : ''}`}>{task.title}</div>
         <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-slate-500">
           <span className={overdue ? 'font-semibold text-red-600' : ''}>{overdue && 'Atrasada · '}{when(task.due_at)}</span>
+          {task.channels && <span title="Lembrete por">{task.channels.split(',').map((c) => ({ whatsapp: '💬', email: '📧', push: '📱' })[c]).join(' ')}</span>}
           {showRef && ref && (
             <Link href={ref.href} className="truncate text-indigo-600 hover:underline">
               {ref.label}{task.company && task.company !== ref.label ? ` · ${task.company}` : ''}

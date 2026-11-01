@@ -30,7 +30,14 @@ const money = (fd: FormData, k: string) => {
 
 /** Lê os campos next_title/next_due do formulário. A próxima ação é obrigatória. */
 function nextAction(fd: FormData) {
-  return { title: req(fd, 'next_title'), due: fromLocalInput(req(fd, 'next_due')) }
+  return { title: req(fd, 'next_title'), due: fromLocalInput(req(fd, 'next_due')), channels: channels(fd) }
+}
+
+/** Canais de lembrete marcados na ação; null = padrão dos Ajustes. */
+function channels(fd: FormData) {
+  const valid = ['push', 'email', 'whatsapp']
+  const list = fd.getAll('next_channels').map(String).filter((c) => valid.includes(c))
+  return list.length ? list.join(',') : null
 }
 
 // ---------- Login ----------
@@ -69,7 +76,7 @@ export async function createLead(fd: FormData) {
       values (${req(fd, 'name')}, ${str(fd, 'company')}, ${str(fd, 'email')}, ${str(fd, 'phone')},
               ${str(fd, 'source')}, ${str(fd, 'notes')})
       returning id`
-    await tx`insert into tasks (title, due_at, lead_id) values (${next.title}, ${next.due}, ${lead.id})`
+    await tx`insert into tasks (title, due_at, lead_id, channels) values (${next.title}, ${next.due}, ${lead.id}, ${next.channels})`
   })
   refresh()
 }
@@ -107,7 +114,7 @@ export async function convertLead(fd: FormData) {
     await tx`update leads set status = 'convertido', updated_at = now() where id = ${leadId}`
     // tarefas abertas do lead passam para o negócio
     await tx`update tasks set deal_id = ${deal.id}, lead_id = null where lead_id = ${leadId} and done_at is null`
-    await tx`insert into tasks (title, due_at, deal_id) values (${next.title}, ${next.due}, ${deal.id})`
+    await tx`insert into tasks (title, due_at, deal_id, channels) values (${next.title}, ${next.due}, ${deal.id}, ${next.channels})`
     return deal.id as number
   })
   redirect(`/negocios/${dealId}`)
@@ -126,7 +133,7 @@ export async function createDeal(fd: FormData) {
               ${str(fd, 'phone')}, ${money(fd, 'value')}, ${stageId}, ${str(fd, 'expected_close')}, ${str(fd, 'notes')})
       returning id`
     await tx`insert into stage_history (deal_id, to_stage_id) values (${deal.id}, ${stageId})`
-    await tx`insert into tasks (title, due_at, deal_id) values (${next.title}, ${next.due}, ${deal.id})`
+    await tx`insert into tasks (title, due_at, deal_id, channels) values (${next.title}, ${next.due}, ${deal.id}, ${next.channels})`
   })
   refresh()
 }
@@ -157,7 +164,7 @@ export async function moveDeal(fd: FormData) {
     if (fd.get('complete_open') === 'on') {
       await tx`update tasks set done_at = now() where deal_id = ${dealId} and done_at is null`
     }
-    await tx`insert into tasks (title, due_at, deal_id) values (${next.title}, ${next.due}, ${dealId})`
+    await tx`insert into tasks (title, due_at, deal_id, channels) values (${next.title}, ${next.due}, ${dealId}, ${next.channels})`
   })
   refresh()
 }
@@ -182,7 +189,7 @@ export async function reopenDeal(fd: FormData) {
   await sql.begin(async (tx) => {
     await tx`update deals set status = 'aberto', closed_at = null, lost_reason = null, stage_entered_at = now(),
              updated_at = now() where id = ${dealId}`
-    await tx`insert into tasks (title, due_at, deal_id) values (${next.title}, ${next.due}, ${dealId})`
+    await tx`insert into tasks (title, due_at, deal_id, channels) values (${next.title}, ${next.due}, ${dealId}, ${next.channels})`
   })
   refresh()
 }
@@ -197,8 +204,8 @@ export async function deleteDeal(fd: FormData) {
 
 export async function createTask(fd: FormData) {
   await requireAuth()
-  await sql`insert into tasks (title, due_at, deal_id, lead_id)
-            values (${req(fd, 'title')}, ${fromLocalInput(req(fd, 'due'))}, ${str(fd, 'deal_id')}, ${str(fd, 'lead_id')})`
+  await sql`insert into tasks (title, due_at, deal_id, lead_id, channels)
+            values (${req(fd, 'title')}, ${fromLocalInput(req(fd, 'due'))}, ${str(fd, 'deal_id')}, ${str(fd, 'lead_id')}, ${channels(fd)})`
   refresh()
 }
 
@@ -219,8 +226,8 @@ export async function completeTask(fd: FormData) {
       if (aberto && open === 0 && !nextTitle) throw new Error('Defina a próxima ação do negócio')
     }
     if (nextTitle) {
-      await tx`insert into tasks (title, due_at, deal_id, lead_id)
-               values (${nextTitle}, ${fromLocalInput(req(fd, 'next_due'))}, ${task.deal_id}, ${task.lead_id})`
+      await tx`insert into tasks (title, due_at, deal_id, lead_id, channels)
+               values (${nextTitle}, ${fromLocalInput(req(fd, 'next_due'))}, ${task.deal_id}, ${task.lead_id}, ${channels(fd)})`
     }
     const note = str(fd, 'note')
     if (note) await tx`insert into notes (body, deal_id, lead_id) values (${note}, ${task.deal_id}, ${task.lead_id})`
