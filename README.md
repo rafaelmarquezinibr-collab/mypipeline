@@ -35,7 +35,7 @@ npm run dev
 1. **Supabase**: crie um projeto (região São Paulo). Em *Project Settings > Database*, copie a connection string.
    Rode as migrações uma vez da sua máquina: `DATABASE_URL="<string de conexão>" npm run db:migrate`.
 2. **Vercel**: *Add New > Project*, importe este repositório e preencha as variáveis do `.env.example`
-   (use a URL do *Transaction pooler*, porta 6543, em `DATABASE_URL`).
+   (use a URL do *Session pooler*, porta 5432, em `DATABASE_URL`; o *Transaction pooler* trava o app).
 3. **Lembretes a cada 5 minutos**: o cron gratuito da Vercel roda só 1x por dia, então o agendamento fica no Supabase.
    Em *Database > Extensions*, ative `pg_cron` e `pg_net`, e rode no SQL Editor:
 
