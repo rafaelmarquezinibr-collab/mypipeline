@@ -57,7 +57,7 @@ async function Config() {
         <h2 className="h2 mb-3">Lembretes</h2>
         <form action={saveSettings} className="space-y-3">
           <div className="flex flex-wrap gap-4 text-sm">
-            {[['push', 'Celular'], ['email', 'E-mail'], ['whatsapp', 'WhatsApp']].map(([k, v]) => (
+            {[['push', 'Celular'], ['email', 'E-mail'], ['telegram', 'Telegram'], ['whatsapp', 'WhatsApp']].map(([k, v]) => (
               <label key={k} className="flex items-center gap-2"><input type="checkbox" name={`ch_${k}`} defaultChecked={channels.includes(k)} /> {v}</label>
             ))}
           </div>

@@ -26,7 +26,7 @@ const presets = [
 ]
 
 const CHANNELS = [
-  { key: 'whatsapp', label: '💬 WhatsApp' },
+  { key: 'telegram', label: '✈️ Telegram' },
   { key: 'email', label: '📧 E-mail' },
   { key: 'push', label: '📱 Celular' },
 ]

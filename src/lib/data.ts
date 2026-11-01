@@ -22,7 +22,7 @@ export type Deal = {
 export type Task = {
   id: number; title: string; due_at: Date; done_at: Date | null
   deal_id: number | null; lead_id: number | null
-  /** canais de lembrete escolhidos ('email,whatsapp'); null = padrão dos Ajustes */
+  /** canais de lembrete escolhidos ('email,telegram'); null = padrão dos Ajustes */
   channels: string | null
   deal_title: string | null; lead_name: string | null; company: string | null
   /** true quando é a única ação aberta de um negócio aberto: concluir exige a próxima */

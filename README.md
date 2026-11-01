@@ -61,7 +61,8 @@ Canais (cada um liga sozinho quando as variáveis existem; teste em *Ajustes*):
 - **Celular**: gere as chaves com `npx web-push generate-vapid-keys`. No iPhone, adicione o app à Tela de Início
   pelo Safari (Compartilhar > Adicionar à Tela de Início), abra por lá e toque em *Ativar neste aparelho*.
 - **E-mail**: crie uma chave em resend.com.
-- **WhatsApp**: siga o passo a passo do CallMeBot (mandar uma mensagem para o número deles e receber a apikey).
+- **Telegram**: no Telegram, fale com @BotFather, mande `/newbot`, escolha um nome e copie o token para `TELEGRAM_BOT_TOKEN`. Abra o bot criado e mande `/start`. O app descobre o seu chat sozinho no primeiro envio.
+- **WhatsApp** (opcional; o CallMeBot às vezes fica sem vagas): siga o passo a passo do CallMeBot (mandar uma mensagem para o número deles e receber a apikey).
   É gratuito e serve para mandar mensagens para o seu próprio número.
 
 ## Agenda do Outlook

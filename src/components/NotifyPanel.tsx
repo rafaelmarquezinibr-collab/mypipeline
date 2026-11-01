@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { sendDigestNow, testNotify } from '@/app/notify-actions'
 
-type Ch = 'push' | 'email' | 'whatsapp'
-const names: Record<Ch, string> = { push: 'Notificação no celular', email: 'E-mail', whatsapp: 'WhatsApp' }
+type Ch = 'push' | 'email' | 'telegram' | 'whatsapp'
+const names: Record<Ch, string> = { push: 'Notificação no celular', email: 'E-mail', telegram: 'Telegram', whatsapp: 'WhatsApp (CallMeBot)' }
 
 function b64ToUint8(base64: string) {
   const pad = '='.repeat((4 - (base64.length % 4)) % 4)
