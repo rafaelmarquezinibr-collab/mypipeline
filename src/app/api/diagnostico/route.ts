@@ -26,6 +26,7 @@ export async function GET() {
     CALENDAR_TOKEN: has('CALENDAR_TOKEN'),
     VAPID: has('NEXT_PUBLIC_VAPID_PUBLIC_KEY') && has('VAPID_PRIVATE_KEY'),
     RESEND: has('RESEND_API_KEY') && has('REMINDER_EMAIL_TO'),
+    TELEGRAM: has('TELEGRAM_BOT_TOKEN'),
     CALLMEBOT: has('CALLMEBOT_PHONE') && has('CALLMEBOT_APIKEY'),
   })
 }

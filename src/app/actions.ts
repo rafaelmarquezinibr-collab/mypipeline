@@ -35,7 +35,7 @@ function nextAction(fd: FormData) {
 
 /** Canais de lembrete marcados na ação; null = padrão dos Ajustes. */
 function channels(fd: FormData) {
-  const valid = ['push', 'email', 'whatsapp']
+  const valid = ['push', 'email', 'telegram', 'whatsapp']
   const list = fd.getAll('next_channels').map(String).filter((c) => valid.includes(c))
   return list.length ? list.join(',') : null
 }
@@ -307,7 +307,7 @@ export async function deleteStage(fd: FormData) {
 
 export async function saveSettings(fd: FormData) {
   await requireAuth()
-  const channels = ['push', 'email', 'whatsapp'].filter((c) => fd.get(`ch_${c}`) === 'on').join(',')
+  const channels = ['push', 'email', 'telegram', 'whatsapp'].filter((c) => fd.get(`ch_${c}`) === 'on').join(',')
   const values: Record<string, string> = {
     channels,
     remind_minutes_before: str(fd, 'remind_minutes_before') ?? '30',
