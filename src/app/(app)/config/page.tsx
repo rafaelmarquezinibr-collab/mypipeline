@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import { getSettings, getStages } from '@/lib/data'
 import { addStage, deleteStage, logout, moveStage, saveSettings, updateStage } from '@/app/actions'
-import { channelStatus } from '@/lib/notify'
+import { channelStatus, vapidKey } from '@/lib/notify'
 import { Loading } from '@/components/Loading'
 import { NotifyPanel } from '@/components/NotifyPanel'
 import { SubmitButton } from '@/components/SubmitButton'
@@ -70,7 +70,7 @@ async function Config() {
           <SubmitButton className="btn-ghost">Salvar lembretes</SubmitButton>
         </form>
         <div className="mt-4 border-t border-slate-100 pt-4">
-          <NotifyPanel status={channelStatus()} vapidKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null} />
+          <NotifyPanel status={channelStatus()} vapidKey={vapidKey(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) || null} />
         </div>
       </section>
 

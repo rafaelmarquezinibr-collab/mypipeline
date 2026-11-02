@@ -17,8 +17,21 @@ export function channelStatus(): Record<Channel, boolean> {
   }
 }
 
+/**
+ * Chave VAPID como o web-push exige (base64 URL-safe, sem "=").
+ * Tolera o que costuma vir junto ao colar no painel da Vercel: espaços, aspas, "NOME=" na frente.
+ */
+export function vapidKey(v: string | undefined) {
+  return (v ?? '').trim().replace(/^[A-Z_]+=/, '').replace(/^["']|["']$/g, '').trim()
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
 async function sendPush(msg: Message) {
-  webpush.setVapidDetails(env.VAPID_SUBJECT ?? 'mailto:admin@example.com', env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!, env.VAPID_PRIVATE_KEY!)
+  webpush.setVapidDetails(
+    (env.VAPID_SUBJECT ?? '').trim() || 'mailto:admin@example.com',
+    vapidKey(env.NEXT_PUBLIC_VAPID_PUBLIC_KEY),
+    vapidKey(env.VAPID_PRIVATE_KEY),
+  )
   const subs = await sql<{ id: number; endpoint: string; p256dh: string; auth: string }[]>`select * from push_subscriptions`
   await Promise.all(
     subs.map(async (s) => {
