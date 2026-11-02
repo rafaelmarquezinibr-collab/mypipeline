@@ -1,4 +1,5 @@
 import { sql } from '@/lib/db'
+import { appUrl } from '@/lib/app-url'
 
 /**
  * Feed iCalendar das próximas ações. No Outlook: Adicionar calendário > Assinar da Web,
@@ -15,7 +16,7 @@ export async function GET(request: Request) {
     where t.done_at is null and t.due_at > now() - interval '30 days'
     order by t.due_at`
   const stamp = ics(new Date())
-  const base = process.env.APP_URL ?? ''
+  const base = appUrl()
   const events = tasks.map((t) => {
     const end = new Date(t.due_at.getTime() + 30 * 60_000)
     const url = `${base}${t.deal_id ? `/negocios/${t.deal_id}` : t.lead_id ? `/leads/${t.lead_id}` : '/'}`

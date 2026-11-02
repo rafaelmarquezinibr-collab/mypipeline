@@ -14,7 +14,7 @@ export async function GET() {
              (select count(*)::int from leads) as leads`
     db = `ok em ${Date.now() - t0} ms (${n} etapas, ${deals} negócios, ${leads} leads)`
   } catch (e) {
-    db = `erro: ${(e as { code?: string }).code ?? 'sem conexão'}`
+    db = `erro: ${(e as { code?: string }).code ?? 'sem código'} ${(e as Error).message ?? ''}`.trim()
   }
   return Response.json({
     APP_PASSWORD: has('APP_PASSWORD'),
