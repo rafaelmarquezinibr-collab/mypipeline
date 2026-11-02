@@ -1,6 +1,7 @@
 import 'server-only'
 import webpush from 'web-push'
 import { sql } from './db'
+import { appUrl } from '@/lib/app-url'
 
 export type Message = { title: string; body: string; url?: string }
 export type Channel = 'push' | 'email' | 'telegram' | 'whatsapp'
@@ -37,7 +38,7 @@ async function sendPush(msg: Message) {
 }
 
 async function sendEmail(msg: Message) {
-  const link = msg.url ? `<p><a href="${env.APP_URL}${msg.url}">Abrir no app</a></p>` : ''
+  const link = msg.url ? `<p><a href="${appUrl()}${msg.url}">Abrir no app</a></p>` : ''
   const html = `<h2 style="font-family:sans-serif">${esc(msg.title)}</h2>
     <pre style="font-family:sans-serif;white-space:pre-wrap;font-size:15px">${esc(msg.body)}</pre>${link}`
   const res = await fetch('https://api.resend.com/emails', {
@@ -72,7 +73,7 @@ async function telegramChatId() {
 }
 
 async function sendTelegram(msg: Message) {
-  const link = msg.url ? `\n<a href="${env.APP_URL}${msg.url}">Abrir no app</a>` : ''
+  const link = msg.url ? `\n<a href="${appUrl()}${msg.url}">Abrir no app</a>` : ''
   const res = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -88,7 +89,7 @@ async function sendTelegram(msg: Message) {
 
 /** WhatsApp para o próprio número via CallMeBot (gratuito, uso pessoal). */
 async function sendWhatsApp(msg: Message) {
-  const text = `*${msg.title}*\n${msg.body}${msg.url ? `\n${env.APP_URL}${msg.url}` : ''}`
+  const text = `*${msg.title}*\n${msg.body}${msg.url ? `\n${appUrl()}${msg.url}` : ''}`
   const url = new URL('https://api.callmebot.com/whatsapp.php')
   url.searchParams.set('phone', env.CALLMEBOT_PHONE!)
   url.searchParams.set('apikey', env.CALLMEBOT_APIKEY!)

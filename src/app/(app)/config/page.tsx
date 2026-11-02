@@ -6,6 +6,7 @@ import { channelStatus } from '@/lib/notify'
 import { Loading } from '@/components/Loading'
 import { NotifyPanel } from '@/components/NotifyPanel'
 import { SubmitButton } from '@/components/SubmitButton'
+import { appUrl } from '@/lib/app-url'
 
 export default function ConfigPage() {
   return <Suspense fallback={<Loading />}><Config /></Suspense>
@@ -14,7 +15,7 @@ export default function ConfigPage() {
 async function Config() {
   const [stages, settings] = await Promise.all([getStages(), getSettings()])
   const channels = settings.channels?.split(',') ?? []
-  const calUrl = process.env.CALENDAR_TOKEN ? `${process.env.APP_URL}/api/calendario?token=${process.env.CALENDAR_TOKEN}` : null
+  const calUrl = process.env.CALENDAR_TOKEN ? `${appUrl()}/api/calendario?token=${process.env.CALENDAR_TOKEN}` : null
 
   return (
     <div className="max-w-3xl space-y-5">
